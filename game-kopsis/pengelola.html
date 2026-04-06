@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Pengelola koprasi</title>
+
+<style>
+body{
+    font-family: Arial;
+    text-align:center;
+    background:rgb(131, 183, 243);
+}
+
+h1{
+    color:#333;
+}
+
+.container{
+    margin-top:20px;
+}
+
+.kartu{
+    display:none;
+    background:rgb(131, 183, 243);
+    width: 250px;
+    margin:20px auto;
+    padding:15px;
+    border-radius:10px;
+    box-shadow:0 0 10px rgba(0,0,0,0.2);
+}
+
+img{
+    width:150px;
+}
+
+button{
+    padding:10px 15px;
+    margin:5px;
+    border:none;
+    background:rgb(25, 126, 241);
+    color:rgb(14, 15, 16);
+    border-radius:5px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:rgb(25,126,241);              
+}
+</style>
+
+<script>
+function tampilkan(id){
+    document.getElementById("ketua").style.display="none";
+    document.getElementById("sekretaris").style.display="none";
+    document.getElementById("bendahara").style.display="none";
+
+    document.getElementById(id).style.display="block";
+}
+</script>
+
+</head>
+
+<body>
+
+<h1>Pengelola koprasi sekolah</h1>
+
+<div class="container">
+
+<button onclick="tampilkan('ketua')">Ketua</button>
+<button onclick="tampilkan('sekretaris')">Sekretaris</button>
+<button onclick="tampilkan('bendahara')">Bendahara</button>
+
+<div id="ketua" class="kartu">
+<img src="pak-widi.jpeg">
+<h3>ketua<h3>
+ widiwasito.S.Pd.M.Pd
+<p>Bertugas memimpin jalannya koperasi.</p>
+</div>
+
+<div id="sekretaris" class="kartu">
+<img src="mam-nia.jpeg">
+<h3>Sekretaris</h3>
+<h3>mam nia</h3>
+<p>Mengurus administrasi dan keperluan koperasi.</p>
+</div>
+
+<div id="bendahara" class="kartu">
+<img src="guru-wanita.jpeg">
+<h3>Bendahara</h3>
+<p>Mengelola keuangan koperasi.</p>
+</div>
+
+</div>
+
+</body>
+</html>
+
+
+<a href="index.html">Kembali ke Beranda</a>

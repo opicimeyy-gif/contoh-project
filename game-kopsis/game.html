@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>SnackQuiz</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Boogaloo&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+
+<style>
+
+:root{
+--blue1:#0577f2;
+--blue2:#83b7f3;
+--card:#ffffff20;
+--white:#fff;
+--green:#2ecc71;
+--red:#ff5a5a;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+font-family:'Nunito';
+background:linear-gradient(90deg,var(--blue1),var(--blue2));
+min-height:100vh;
+color:white;
+}
+
+.wrap{
+max-width:650px;
+margin:auto;
+padding:20px;
+}
+
+header{text-align:center;margin-bottom:25px}
+
+.logo{
+font-family:'Boogaloo';
+font-size:3rem;
+}
+
+.tagline{
+opacity:.8;
+font-size:.8rem;
+letter-spacing:2px;
+}
+
+.menu-card,.game-card{
+background:var(--card);
+backdrop-filter:blur(10px);
+border-radius:20px;
+padding:25px;
+box-shadow:0 10px 25px rgba(0,0,0,.3);
+}
+
+.section-title{
+text-align:center;
+margin-bottom:15px;
+font-weight:900;
+}
+
+.cat-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+margin-bottom:20px;
+}
+
+.cat-card{
+background:#ffffff20;
+border-radius:15px;
+padding:15px;
+text-align:center;
+cursor:pointer;
+transition:.2s;
+}
+
+.cat-card:hover{
+transform:translateY(-3px);
+background:#ffffff40;
+}
+
+.cat-card.selected{
+background:white;
+color:#0577f2;
+font-weight:900;
+}
+
+.start-btn{
+width:100%;
+border:none;
+padding:14px;
+border-radius:15px;
+font-weight:900;
+font-size:1.1rem;
+background:white;
+color:#0577f2;
+cursor:pointer;
+}
+
+.start-btn:disabled{
+opacity:.4;
+cursor:not-allowed;
+}
+
+.stat-bar{
+display:flex;
+gap:10px;
+margin-bottom:15px;
+}
+
+.stat-pill{
+flex:1;
+background:var(--card);
+border-radius:12px;
+padding:10px;
+text-align:center;
+}
+
+.stat-val{
+font-size:1.4rem;
+font-weight:900;
+}
+
+.time-bar{
+height:8px;
+background:#ffffff30;
+border-radius:10px;
+overflow:hidden;
+margin-bottom:10px;
+}
+
+#timeBar{
+height:100%;
+width:100%;
+background:var(--green);
+transition:1s linear;
+}
+
+.word-display{
+display:flex;
+gap:6px;
+justify-content:center;
+margin:15px 0;
+flex-wrap:wrap;
+}
+
+.lb{
+width:35px;
+height:45px;
+border-bottom:3px solid white;
+text-align:center;
+font-size:1.4rem;
+font-weight:900;
+}
+
+.keyboard{
+display:flex;
+flex-wrap:wrap;
+gap:5px;
+justify-content:center;
+}
+
+.key-btn{
+width:35px;
+height:35px;
+border:none;
+border-radius:6px;
+background:white;
+color:#0577f2;
+font-weight:900;
+cursor:pointer;
+}
+
+.key-btn:disabled{opacity:.3}
+
+.hint-btn{
+margin-top:10px;
+width:100%;
+padding:10px;
+border:none;
+border-radius:10px;
+font-weight:900;
+background:#ffd166;
+color:#333;
+cursor:pointer;
+}
+
+.overlay{
+display:none;
+position:fixed;
+inset:0;
+background:#000000aa;
+align-items:center;
+justify-content:center;
+}
+
+.overlay.show{display:flex}
+
+.modal{
+background:white;
+color:#0577f2;
+padding:30px;
+border-radius:20px;
+text-align:center;
+max-width:350px;
+}
+
+#qrBox{
+margin-top:10px;
+display:flex;
+justify-content:center;
+}
+
+.btn-main{
+margin-top:15px;
+padding:10px 20px;
+border:none;
+border-radius:10px;
+background:#0577f2;
+color:white;
+font-weight:900;
+cursor:pointer;
+}
+
+.expired{
+color:red;
+font-weight:900;
+margin-top:8px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="wrap">
+
+<header>
+<div class="logo">SnackQuiz</div>
+<div class="tagline">Tebak Kata & Menangkan Diskon</div>
+</header>
+
+<div id="menuScreen" class="menu-card">
+
+<p class="section-title">Pilih Kategori</p>
+
+<div class="cat-grid">
+
+<div class="cat-card" onclick="pickCat('makanan',this)">
+🍔<br>Makanan
+</div>
+
+<div class="cat-card" onclick="pickCat('minuman',this)">
+🧋<br>Minuman
+</div>
+
+</div>
+
+<p>Highscore: <b id="highscore">0</b></p>
+
+<br>
+
+<button class="start-btn" id="startBtn" onclick="startGame()" disabled>
+Mulai Bermain
+</button>
+
+</div>
+
+<div id="gameScreen" style="display:none">
+
+<div class="stat-bar">
+
+<div class="stat-pill">
+Soal
+<div class="stat-val" id="sNum"></div>
+</div>
+
+<div class="stat-pill">
+Skor
+<div class="stat-val" id="sScore"></div>
+</div>
+
+<div class="stat-pill">
+Nyawa
+<div class="stat-val" id="sLives"></div>
+</div>
+
+</div>
+
+<div class="time-bar">
+<div id="timeBar"></div>
+</div>
+
+<div class="game-card">
+
+<div id="gHint"></div>
+
+<div class="word-display" id="wordDisplay"></div>
+
+<div class="keyboard" id="keyboard"></div>
+
+<button class="hint-btn" onclick="revealLetter()">
+Buka Huruf (-1 Nyawa)
+</button>
+
+</div>
+</div>
+</div>
+
+<div class="overlay" id="overlay">
+
+<div class="modal">
+
+<h2 id="mTitle"></h2>
+
+<p id="mSub"></p>
+
+<h1 id="discAmt"></h1>
+
+<p id="discCode"></p>
+
+<p id="ticketTime"></p>
+
+<p id="ticketExpire"></p>
+
+<div id="qrBox"></div>
+
+<p id="expiredLabel"></p>
+
+<button class="btn-main" onclick="location.reload()">
+Main Lagi
+</button>
+
+</div>
+
+</div>
+
+<script>
+
+const WORDS={
+
+makanan:[
+{w:"BURGER",h:"Roti isi daging"},
+{w:"PIZZA",h:"Roti bulat topping"},
+{w:"KEBAB",h:"Roti isi daging timur tengah"},
+{w:"DIMSUM",h:"Makanan kecil dari China"},
+{w:"NUGGET",h:"Ayam goreng kecil"},
+{w:"BAKSO",h:"Bola daging kuah"},
+{w:"SATE",h:"Daging tusuk bakar"},
+{w:"NASI",h:"Makanan pokok Indonesia"}
+],
+
+minuman:[
+{w:"KOPI",h:"Minuman hitam bikin melek"},
+{w:"JUS",h:"Minuman buah"},
+{w:"SUSU",h:"Minuman putih"},
+{w:"MATCHA",h:"Teh hijau Jepang"},
+{w:"BOBA",h:"Minuman dengan bola"},
+{w:"TEH",h:"Minuman daun"},
+{w:"SODA",h:"Minuman bersoda"}
+]
+
+}
+
+let G={
+cat:null,
+words:[],
+idx:0,
+word:"",
+guessed:new Set(),
+lives:5,
+score:0,
+correct:0
+}
+
+let time=20
+let timerInt
+
+highscore.textContent=localStorage.getItem("highscore")||0
+
+function pickCat(cat,el){
+G.cat=cat
+document.querySelectorAll(".cat-card").forEach(c=>c.classList.remove("selected"))
+el.classList.add("selected")
+startBtn.disabled=false
+}
+
+function startGame(){
+
+G.words=[...WORDS[G.cat]].sort(()=>Math.random()-0.5)
+
+G.idx=0
+G.score=0
+G.correct=0
+
+menuScreen.style.display="none"
+gameScreen.style.display="block"
+
+loadQ()
+
+}
+
+function startTimer(){
+
+clearInterval(timerInt)
+
+time=20
+timeBar.style.background="#2ecc71"
+
+timerInt=setInterval(()=>{
+
+time--
+
+timeBar.style.width=(time/20*100)+"%"
+
+if(time<6)timeBar.style.background="red"
+
+if(time<=0){
+clearInterval(timerInt)
+loseWord()
+}
+
+},1000)
+
+}
+
+function loadQ(){
+
+startTimer()
+
+let q=G.words[G.idx]
+
+G.word=q.w
+G.guessed=new Set()
+G.lives=5
+
+sNum.textContent=(G.idx+1)+"/5"
+sScore.textContent=G.score
+sLives.textContent="❤️❤️❤️❤️❤️"
+
+gHint.textContent="Petunjuk: "+q.h
+
+renderWord()
+renderKB()
+
+}
+
+function renderWord(){
+
+wordDisplay.innerHTML=""
+
+for(let ch of G.word){
+
+let d=document.createElement("div")
+
+d.className="lb"
+
+if(G.guessed.has(ch))d.textContent=ch
+
+wordDisplay.appendChild(d)
+
+}
+
+}
+
+function renderKB(){
+
+keyboard.innerHTML=""
+
+"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(l=>{
+
+let b=document.createElement("button")
+
+b.textContent=l
+b.className="key-btn"
+
+b.onclick=()=>guess(l)
+
+if(G.guessed.has(l))b.disabled=true
+
+keyboard.appendChild(b)
+
+})
+
+}
+
+function guess(l){
+
+G.guessed.add(l)
+
+if(!G.word.includes(l)){
+G.lives--
+sLives.textContent="❤️".repeat(G.lives)
+
+if(G.lives<=0)loseWord()
+}
+
+renderWord()
+renderKB()
+
+if([...new Set(G.word)].every(x=>G.guessed.has(x))){
+
+clearInterval(timerInt)
+
+G.correct++
+G.score+=10*G.lives
+
+next()
+
+}
+
+}
+
+function revealLetter(){
+
+if(G.lives<=1)return
+
+let hidden=[...G.word].filter(x=>!G.guessed.has(x))
+
+let r=hidden[Math.floor(Math.random()*hidden.length)]
+
+G.guessed.add(r)
+
+G.lives--
+
+sLives.textContent="❤️".repeat(G.lives)
+
+renderWord()
+
+}
+
+function next(){
+
+G.idx++
+
+if(G.idx>=5)result()
+else loadQ()
+
+}
+
+function loseWord(){
+
+clearInterval(timerInt)
+
+next()
+
+}
+
+function generateCode(discount){
+
+let rand=Math.random().toString(36).substring(2,8).toUpperCase()
+
+return "SNACK-"+discount.replace("%","")+"-"+rand
+
+}
+
+function result(){
+
+gameScreen.style.display="none"
+
+overlay.classList.add("show")
+
+let disc="5%"
+
+if(G.correct<=1)disc="5%"
+else if(G.correct<=3)disc="10%"
+else if(G.correct==4)disc="15%"
+else if(G.correct==5)disc="20%"
+
+let code=generateCode(disc)
+
+let now=new Date()
+
+let expire=new Date(now.getTime()+2*60*60*1000)
+
+let timeString=now.toLocaleString()
+
+let expString=expire.toLocaleString()
+
+mTitle.textContent="Permainan Selesai"
+
+mSub.textContent="Skor: "+G.score
+
+discAmt.textContent="DISKON "+disc
+
+discCode.textContent="Kode Tiket: "+code
+
+ticketTime.textContent="Didapat: "+timeString
+
+ticketExpire.textContent="Expired: "+expString
+
+qrBox.innerHTML=""
+
+new QRCode(qrBox,{
+text:code,
+width:140,
+height:140
+})
+
+let hs=localStorage.getItem("highscore")||0
+
+if(G.score>hs){
+localStorage.setItem("highscore",G.score)
+}
+
+setInterval(()=>{
+
+let nowCheck=new Date()
+
+if(nowCheck>expire){
+
+expiredLabel.textContent="TIKET EXPIRED"
+expiredLabel.classList.add("expired")
+
+}
+
+},1000)
+
+}
+
+</script>
+
+</body>
+</html>
